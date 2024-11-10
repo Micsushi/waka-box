@@ -13316,7 +13316,7 @@ module.exports = (function(e, t) {
       totalMilliseconds = a; // already in milliseconds
   }
 
-  var hours = Math.floor(totalMilliseconds / 3600000);
+  var hours = Math.floor(totalMilliseconds / 360000);
   var minutes = Math.floor((totalMilliseconds % 3600000) / 60000);
 
   return `${hours}h ${minutes}m`;
