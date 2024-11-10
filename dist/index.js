@@ -13259,57 +13259,68 @@ module.exports = (function(e, t) {
       );
     };
     function parse(e) {
-      e = String(e);
-      if (e.length > 100) {
-        return;
-      }
-      var o = /^((?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|years?|yrs?|y)?$/i.exec(
-        e
-      );
-      if (!o) {
-        return;
-      }
-      var a = parseFloat(o[1]);
-      var u = (o[2] || "ms").toLowerCase();
-      switch (u) {
-        case "years":
-        case "year":
-        case "yrs":
-        case "yr":
-        case "y":
-          return a * s;
-        case "days":
-        case "day":
-        case "d":
-          return a * i;
-        case "hours":
-        case "hour":
-        case "hrs":
-        case "hr":
-        case "h":
-          return a * n;
-        case "minutes":
-        case "minute":
-        case "mins":
-        case "min":
-        case "m":
-          return a * r;
-        case "seconds":
-        case "second":
-        case "secs":
-        case "sec":
-        case "s":
-          return a * t;
-        case "milliseconds":
-        case "millisecond":
-        case "msecs":
-        case "msec":
-        case "ms":
-          return a;
-        default:
-          return undefined;
-      }
-    }
+  e = String(e);
+  if (e.length > 100) {
+    return;
+  }
+  var o = /^((?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|years?|yrs?|y)?$/i.exec(
+    e
+  );
+  if (!o) {
+    return;
+  }
+  var a = parseFloat(o[1]);
+  var u = (o[2] || "ms").toLowerCase();
+  var totalMilliseconds;
+
+  switch (u) {
+    case "years":
+    case "year":
+    case "yrs":
+    case "yr":
+    case "y":
+      totalMilliseconds = a * 31536000000; // 1 year in milliseconds
+      break;
+    case "days":
+    case "day":
+    case "d":
+      totalMilliseconds = a * 86400000; // 1 day in milliseconds
+      break;
+    case "hours":
+    case "hour":
+    case "hrs":
+    case "hr":
+    case "h":
+      totalMilliseconds = a * 3600000; // 1 hour in milliseconds
+      break;
+    case "minutes":
+    case "minute":
+    case "mins":
+    case "min":
+    case "m":
+      totalMilliseconds = a * 60000; // 1 minute in milliseconds
+      break;
+    case "seconds":
+    case "second":
+    case "secs":
+    case "sec":
+    case "s":
+      totalMilliseconds = a * 1000; // 1 second in milliseconds
+      break;
+    case "milliseconds":
+    case "millisecond":
+    case "msecs":
+    case "msec":
+    case "ms":
+    default:
+      totalMilliseconds = a; // already in milliseconds
+  }
+
+  var hours = Math.floor(totalMilliseconds / 3600000);
+  var minutes = Math.floor((totalMilliseconds % 3600000) / 60000);
+
+  return `${hours}h ${minutes}m`;
+}
     function fmtShort(e) {
       if (e >= i) {
         return Math.round(e / i) + "d";
