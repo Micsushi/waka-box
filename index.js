@@ -9,16 +9,18 @@ const {
 } = process.env;
 
 const wakatime = new WakaTimeClient(wakatimeApiKey);
-
 const octokit = new Octokit({ auth: `token ${githubToken}` });
 
-async function main() {
-  const stats = await wakatime.getMyStats({ range: RANGE.LAST_7_DAYS });
-  await updateGist(stats);
+function formatDuration(duration) {
+  if (!duration) return '';
+  const matches = duration.match(/(\d+)\s*hrs?\s*(?:(\d+)\s*mins?)?/);
+  if (!matches) return duration;
+  const hours = matches[1];
+  const minutes = matches[2] || '0';
+  return `${hours} h${minutes !== '0' ? ` ${minutes} m` : ''}`;
 }
 
 function trimRightStr(str, len) {
-  // Ellipsis takes 3 positions, so the index of substring is 0 to total length - 3.
   return str.length > len ? str.substring(0, len - 3) + "..." : str;
 }
 
@@ -37,7 +39,7 @@ async function updateGist(stats) {
 
     const line = [
       trimRightStr(name, 10).padEnd(10),
-      time.padEnd(14),
+      formatDuration(time).padEnd(14), // Added formatDuration here
       generateBarChart(percent, 21),
       String(percent.toFixed(1)).padStart(5) + "%"
     ];
@@ -48,7 +50,6 @@ async function updateGist(stats) {
   if (lines.length == 0) return;
 
   try {
-    // Get original filename to update that same file
     const filename = Object.keys(gist.data.files)[0];
     await octokit.gists.update({
       gist_id: gistId,
@@ -66,7 +67,6 @@ async function updateGist(stats) {
 
 function generateBarChart(percent, size) {
   const syms = "░▏▎▍▌▋▊▉█";
-
   const frac = Math.floor((size * 8 * percent) / 100);
   const barsFull = Math.floor(frac / 8);
   if (barsFull >= size) {
@@ -77,6 +77,11 @@ function generateBarChart(percent, size) {
   return [syms.substring(8, 9).repeat(barsFull), syms.substring(semi, semi + 1)]
     .join("")
     .padEnd(size, syms.substring(0, 1));
+}
+
+async function main() {
+  const stats = await wakatime.getMyStats({ range: RANGE.LAST_7_DAYS });
+  await updateGist(stats);
 }
 
 (async () => {
